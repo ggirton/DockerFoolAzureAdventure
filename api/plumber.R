@@ -1,12 +1,30 @@
-#install.packages("plumber")
+#install.packages("plumber")  # This is already installed in this docker image
 library(plumber)
-#?plumber
 
-glossaries <- c("oopsie","boopsie","toopsie") 
+#?plumber  # What is this plumber of which we speak?
+
+stats.term.glossary <- read.csv("./randoms/stats-terms2.csv",
+                                stringsAsFactors = FALSE)
+
+nterms <- nrow(stats.term.glossary)
+nterms == 136
+
+random.quote <- function () {
+  ith <- sample(1:nterms,1) # pick a random index into the glossary
+  return(list (stats.term.glossary[ith,'term'], 
+                stats.term.glossary[ith,'definition'])
+  )
+}
+
+random.quote()
+    
+
+# Mock up several random glossaries to use in testing (this worked great)
+glossaries <- c("oopsie","boopsie","loopsie","toopsie") 
 
 # plumber.R
 
-# Get static site out of the way 1st
+# Set up static site reference, served from www folder
 
 #* @assets ./www /
 list()
@@ -15,12 +33,14 @@ list()
 #' @get /randomg
 #'  @serializer unboxedJSON
 function() {
-  g <- sample(1:3,1)
-  print( glossaries[g])
-  x <- list(status = glossaries[g], code = "200",output = list(studentid = "1001", name = "Kevin"))
+  g <- sample(1:4,1)
+  print( glossaries[g])   # Show it on console of docker server
+  # x <- list(status = glossaries[g], code = "200",output = list(authorID = "Allen B Downey", license = "CC BY-NC 3.0"))
+  x <- list(stats_term = random.quote(), code = "200",output = list(authorID = "Allen B Downey", license = "CC BY-NC 3.0"))
   return (x)
 }
 
+### These are from the default Plumber.R
 
 #' Echo the parameter that was sent in
 #' @param msg The message to echo back.
@@ -32,7 +52,7 @@ function(msg=""){
 #' @get /DockerFool
 #' @html
 function(){
-  "<html><h1>hello W</h1><h2>I am a Crazy Fool about DOCKER</h2><blink>true</blink></html>"
+  "<html><h1>Hello Wrld</h1><h2>Hi there I am just a Docker FOOL</h2><blink>true ;-) </blink></html>"
 }
 
 #' Plot out data from the iris dataset
@@ -68,10 +88,5 @@ function(){
 }
 
 # pAPI_and_Site <- plumber::plumb("plumber.R", dir = "api"); pAPI_and_Site$run(port=8001)
+# You could run this from within RStudio...
 
-#c("Census2010_Current",	"Census2010 Vintage")
-#c("ACS2013_Current",	"ACS2013 Vintage")
-#c("ACS2014_Current",	"ACS2014 Vintage")
-#c("ACS2015_Current",	"ACS2015 Vintage")
-#c("ACS2016_Current",	"ACS2016 Vintage")
-#c("ACS2017_Current",	"ACS2017 Vintage")
